@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <title>ERP 模擬考系統 (答案格式相容版)</title>
+    <style>
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: #f0f2f5; padding: 20px; line-height: 1.6; }
+        .container { max-width: 850px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .hidden { display: none; }
+        .question-card { background: #fff; border: 1px solid #ddd; padding: 20px; margin-bottom: 20px; border-radius: 8px; }
+        .error-log { color: #721c24; background: #f8d7da; padding: 10px; border-radius: 5px; margin-bottom: 20px; border: 1px solid #f5c6cb; font-size: 0.85em; }
+        button { background: #007bff; color: white; border: none; padding: 12px 30px; border-radius: 25px; cursor: pointer; font-size: 18px; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        label { display: block; margin: 10px 0; padding: 12px; border: 1px solid #eee; border-radius: 8px; cursor: pointer; }
+        label:hover { background: #f8f9fa; }
+        .result-score { font-size: 48px; color: #d93025; text-align: center; margin: 20px 0; }
+        .debug-info { font-size: 0.8em; color: #999; margin-top: 5px; background: #f9f9f9; padding: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="setup-area" class="container">
+    <h1>ERP 模擬考試系統</h1>
+    <p>系統將隨機抽取 <strong>70 題</strong> 進行測驗。</p>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px dashed #bbb;">
+        <h3>步驟 1：載入題庫</h3>
+        <input type="file" id="file-input" accept=".json" style="margin-bottom: 15px;">
+        <p>或直接貼上 JSON：</p>
+        <textarea id="json-input" style="width:100%; height:150px; padding: 10px;" placeholder='請貼上 JSON 內容...'></textarea>
+    </div>
+
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="processAndStart()">開始抽取 70 題</button>
+    </div>
+</div>
+
+<div id="quiz-area" class="container hidden">
+    <div id="error-display"></div>
+    <div id="questions-container"></div>
+    <div style="text-align: center; margin-top: 30px;">
+        <button onclick="calculateScore()">交卷</button>
+    </div>
+</div>
+
+<div id="result-area" class="container hidden">
+    <h1 style="text-align: center;">考試報告</h1>
+    <div class="result-score" id="final-score"></div>
+    <div id="review-container"></div>
+    <div style="text-align: center; margin-top: 40px;">
+        <button onclick="location.reload()">重新開始</button>
+    </div>
+</div>
+
+<script>
+    let examQuestions = [];
+
+    document.getElementById('file-input').onchange = function(e) {
+        const reader = new FileReader();
+        reader.onload = (e) => document.getElementById('json-input').value = e.target.result;
+        reader.readAsText(e.target.files[0]);
+    };
+
+    function parseAnswer(ans, optionsCount) {
+        // 如果答案本來就是數字
+        if (typeof ans === 'number') return ans;
+        
+        // 如果答案是字串 (例如 "A", "1", "0")
+        if (typeof ans === 'string') {
+            const cleanAns = ans.trim().toUpperCase();
+            // 處理 A, B, C, D...
+            if (['A','B','C','D','E'].includes(cleanAns)) {
+                return cleanAns.charCodeAt(0) - 65;
+            }
+            // 處理 "1", "2" 這種字串
+            const num = parseInt(cleanAns);
+            if (!isNaN(num)) {
+                // 自動判斷是否為 1-based 索引 (如果數字等於選項總數，通常是從 1 開始算的)
+                return (num >= 1 && num === optionsCount) ? num - 1 : num;
+            }
+        }
+        return undefined;
+    }
+
+    function processAndStart() {
+        const rawData = document.getElementById('json-input').value;
+        let pool = [];
+        try {
+            const parsed = JSON.parse(rawData);
+            pool = Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            alert("JSON 語法錯誤！");
+            return;
+        }
+
+        const validQuestions = [];
+        const errors = [];
+
+        pool.forEach((item, index) => {
+            const q = item.q || item.question || item.題目;
+            const o = item.o || item.options || item.選項;
+            // 嘗試從所有可能的欄位抓答案
+            const rawA = (item.a !== undefined) ? item.a : (item.answer || item.ans || item.correct || item.正確答案);
+            
+            const processedA = parseAnswer(rawA, (o ? o.length : 0));
+
+            if (q && Array.isArray(o) && processedA !== undefined && o[processedA] !== undefined) {
+                validQuestions.push({ q, o, a: processedA });
+            } else {
+                errors.push(`第 ${index+1} 題解析失敗 (答案抓到: ${rawA})`);
+            }
+        });
+
+        if (validQuestions.length === 0) {
+            alert("失敗：找不到任何有效題目。請檢查 JSON 欄位是否為 q, o, a");
+            return;
+        }
+
+        if (errors.length > 0) {
+            document.getElementById('error-display').innerHTML = `<div class="error-log">有 ${errors.length} 題格式不符已跳過（例如：${errors[0]}）</div>`;
+        }
+
+        // 抽 70 題
+        validQuestions.sort(() => Math.random() - 0.5);
+        examQuestions = validQuestions.slice(0, 70);
+
+        document.getElementById('setup-area').classList.add('hidden');
+        document.getElementById('quiz-area').classList.remove('hidden');
+        renderQuiz();
+    }
+
+    function renderQuiz() {
+        const container = document.getElementById('questions-container');
+        container.innerHTML = "";
+        examQuestions.forEach((item, i) => {
+            const div = document.createElement('div');
+            div.className = 'question-card';
+            let optionsHtml = "";
+            item.o.forEach((opt, oi) => {
+                optionsHtml += `<label><input type="radio" name="q${i}" value="${oi}"> ${opt}</label>`;
+            });
+            div.innerHTML = `<p><strong>Q${i + 1}. ${item.q}</strong></p>${optionsHtml}`;
+            container.appendChild(div);
+        });
+        window.scrollTo(0,0);
+    }
+
+    function calculateScore() {
+        let correctCount = 0;
+        const review = document.getElementById('review-container');
+        review.innerHTML = "<h2>錯題檢討</h2>";
+
+        examQuestions.forEach((item, i) => {
+            const selected = document.querySelector(`input[name="q${i}"]:checked`);
+            const userAns = selected ? parseInt(selected.value) : -1;
+            
+            if(userAns === item.a) {
+                correctCount++;
+            } else {
+                const div = document.createElement('div');
+                div.className = 'question-card';
+                div.innerHTML = `
+                    <p><strong>Q${i + 1}. ${item.q}</strong></p>
+                    <p style="color:#d93025;">❌ 你的答案：${userAns === -1 ? '未答' : item.o[userAns]}</p>
+                    <p style="color:#1e7e34; font-weight:bold;">✅ 正確答案：${item.o[item.a]}</p>
+                `;
+                review.appendChild(div);
+            }
+        });
+
+        const score = Math.round((correctCount / examQuestions.length) * 100);
+        document.getElementById('final-score').innerText = `${score} 分`;
+        document.getElementById('quiz-area').classList.add('hidden');
+        document.getElementById('result-area').classList.remove('hidden');
+        window.scrollTo(0,0);
+    }
+</script>
+
+</body>
+</html>
