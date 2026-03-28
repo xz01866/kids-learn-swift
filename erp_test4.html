@@ -77,7 +77,7 @@
             try {
                 // 使用 fetch 抓取同目錄下的 json
                 const response = await fetch('questions.json');
-                if (!response.ok) throw new Error("無法讀取 question.json");
+                if (!response.ok) throw new Error("無法讀取 questions.json");
                 
                 const data = await response.json();
                 
