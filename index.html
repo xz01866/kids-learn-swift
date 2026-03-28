@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ERP 認證學習系統</title>
+    <style>
+        /* 基礎樣式重置 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: "Microsoft JhengHei", sans-serif;
+            background-color: #f4f7f6;
+            text-align: center;
+        }
+
+        /* 藍色頂部區塊 - 確保寬度與高度正常 */
+        .top-banner {
+            background-color: #1a73e8;
+            color: white;
+            padding: 60px 20px;
+            margin-bottom: 20px;
+        }
+
+        /* 內容容器 - 移除負邊距，確保不會被蓋住 */
+        .content-box {
+            max-width: 400px;
+            margin: 0 auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 按鈕基礎樣式 */
+        .menu-button {
+            display: block;
+            background-color: #ffffff;
+            color: #1a73e8;
+            border: 2px solid #1a73e8;
+            padding: 15px;
+            margin: 15px 0;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            transition: 0.3s;
+        }
+
+        .menu-button:hover {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        /* 主要行動按鈕 */
+        .primary {
+            background-color: #1a73e8;
+            color: white;
+        }
+
+        .primary:hover {
+            background-color: #1557b0;
+        }
+
+        .footer-text {
+            margin-top: 30px;
+            color: #999;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. 頂部標題 -->
+    <div class="top-banner">
+        <h1>ERP 學習系統</h1>
+        <p>助你高效通過證照考試</p>
+    </div>
+
+    <!-- 2. 功能按鈕區 -->
+    <div class="content-box">
+        <p style="color: #666; font-size: 14px;">請選擇功能：</p>
+        
+        <!-- 連結到測驗頁面，請確保檔名是 erp_quiz.html -->
+        <a href="erp_quiz.html" class="menu-button primary">
+            📝 開始模擬測驗 (70題)
+        </a>
+
+        <a href="#" class="menu-button" onclick="alert('請進入測驗頁面後上傳 JSON 檔')">
+            📂 載入題庫檔案
+        </a>
+
+        <p style="font-size: 12px; color: #888; margin-top: 15px;">
+            建議使用手機「加入主畫面」以獲得 App 體驗
+        </p>
+    </div>
+
+    <!-- 3. 頁尾 -->
+    <div class="footer-text">
+        &copy; 2024 ERP Quiz System
+    </div>
+
+</body>
+</html>
