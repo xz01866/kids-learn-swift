@@ -76,7 +76,7 @@
         window.onload = async function() {
             try {
                 // 使用 fetch 抓取同目錄下的 json
-                const response = await fetch('question.json');
+                const response = await fetch('questions.json');
                 if (!response.ok) throw new Error("無法讀取 question.json");
                 
                 const data = await response.json();
