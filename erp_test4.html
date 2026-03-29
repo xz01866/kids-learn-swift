@@ -85,7 +85,7 @@
                 allQuestions = data.map(item => ({
                     q: item.q || item.question,
                     o: item.o || item.options,
-                    a: (item.a !== undefined) ? item.a : item.answer
+                    a: item.answer
                 }));
 
                 startQuiz(); // 讀取成功後直接開始
