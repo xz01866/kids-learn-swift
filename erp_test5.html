@@ -66,7 +66,7 @@
         window.onload = async function() {
             try {
                 // 讀取你的 questions.json
-                const response = await fetch('questions.json');
+                const response = await fetch('questions2.json');
                 if (!response.ok) throw new Error("讀取失敗，請確認 questions.json 檔案名稱正確。");
                 
                 const data = await response.json();
